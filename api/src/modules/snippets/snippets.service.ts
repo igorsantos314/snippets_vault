@@ -4,18 +4,22 @@ import {
   CreateSnippetInput,
   UpdateSnippetInput,
 } from '../../shared/contracts/ISnippetService.js'
-import { ISnippetRepository } from '../../shared/contracts/ISnippetRepository.js'
+import {
+  ISnippetRepository,
+  PaginationParams,
+  PaginatedResult,
+} from '../../shared/contracts/ISnippetRepository.js'
 import { AppError } from '../../shared/errors/AppError.js'
 
 export class SnippetService implements ISnippetService {
   constructor(private readonly snippetRepository: ISnippetRepository) {}
 
-  async getFeatured(): Promise<Snippet[]> {
-    return this.snippetRepository.findFeatured()
+  async getFeatured(pagination: PaginationParams): Promise<PaginatedResult<Snippet>> {
+    return this.snippetRepository.findFeatured(pagination)
   }
 
-  async getMySnippets(userId: string): Promise<Snippet[]> {
-    return this.snippetRepository.findByOwner(userId)
+  async getMySnippets(userId: string, pagination: PaginationParams): Promise<PaginatedResult<Snippet>> {
+    return this.snippetRepository.findByOwner(userId, pagination)
   }
 
   async create(data: CreateSnippetInput, userId: string): Promise<Snippet> {

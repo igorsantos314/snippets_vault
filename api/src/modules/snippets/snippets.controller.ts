@@ -2,20 +2,23 @@ import { FastifyRequest, FastifyReply } from 'fastify'
 import { ISnippetService } from '../../shared/contracts/ISnippetService.js'
 import { createSnippetSchema } from './dtos/create-snippet.dto.js'
 import { updateSnippetSchema } from './dtos/update-snippet.dto.js'
+import { paginationSchema } from './dtos/pagination.dto.js'
 
 type SnippetParams = { Params: { id: string } }
 
 export class SnippetController {
   constructor(private readonly snippetService: ISnippetService) {}
 
-  async getFeatured(_request: FastifyRequest, reply: FastifyReply): Promise<void> {
-    const snippets = await this.snippetService.getFeatured()
-    reply.send(snippets)
+  async getFeatured(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    const pagination = paginationSchema.parse(request.query)
+    const result = await this.snippetService.getFeatured(pagination)
+    reply.send(result)
   }
 
   async getMySnippets(request: FastifyRequest, reply: FastifyReply): Promise<void> {
-    const snippets = await this.snippetService.getMySnippets(request.user.sub)
-    reply.send(snippets)
+    const pagination = paginationSchema.parse(request.query)
+    const result = await this.snippetService.getMySnippets(request.user.sub, pagination)
+    reply.send(result)
   }
 
   async create(request: FastifyRequest, reply: FastifyReply): Promise<void> {

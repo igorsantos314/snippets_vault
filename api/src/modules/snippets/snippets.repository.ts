@@ -4,21 +4,37 @@ import {
   ISnippetRepository,
   CreateSnippetData,
   UpdateSnippetData,
+  PaginationParams,
+  PaginatedResult,
 } from '../../shared/contracts/ISnippetRepository.js'
 
 export class SnippetRepository implements ISnippetRepository {
-  async findFeatured(): Promise<Snippet[]> {
-    return prisma.snippet.findMany({
-      where: { featured: true },
-      orderBy: { createdAt: 'desc' },
-    })
+  async findFeatured({ page, limit }: PaginationParams): Promise<PaginatedResult<Snippet>> {
+    const skip = (page - 1) * limit
+    const [data, total] = await prisma.$transaction([
+      prisma.snippet.findMany({
+        where: { featured: true },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.snippet.count({ where: { featured: true } }),
+    ])
+    return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } }
   }
 
-  async findByOwner(ownerId: string): Promise<Snippet[]> {
-    return prisma.snippet.findMany({
-      where: { ownerId },
-      orderBy: { createdAt: 'desc' },
-    })
+  async findByOwner(ownerId: string, { page, limit }: PaginationParams): Promise<PaginatedResult<Snippet>> {
+    const skip = (page - 1) * limit
+    const [data, total] = await prisma.$transaction([
+      prisma.snippet.findMany({
+        where: { ownerId },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.snippet.count({ where: { ownerId } }),
+    ])
+    return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } }
   }
 
   async findById(id: string): Promise<Snippet | null> {

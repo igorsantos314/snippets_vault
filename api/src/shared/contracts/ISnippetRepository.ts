@@ -1,5 +1,20 @@
 import { Snippet } from '@prisma/client'
 
+export interface PaginationParams {
+  page: number
+  limit: number
+}
+
+export interface PaginatedResult<T> {
+  data: T[]
+  meta: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+}
+
 export interface CreateSnippetData {
   title: string
   description?: string
@@ -16,8 +31,8 @@ export interface UpdateSnippetData {
 }
 
 export interface ISnippetRepository {
-  findFeatured(): Promise<Snippet[]>
-  findByOwner(ownerId: string): Promise<Snippet[]>
+  findFeatured(pagination: PaginationParams): Promise<PaginatedResult<Snippet>>
+  findByOwner(ownerId: string, pagination: PaginationParams): Promise<PaginatedResult<Snippet>>
   findById(id: string): Promise<Snippet | null>
   create(data: CreateSnippetData): Promise<Snippet>
   update(id: string, data: UpdateSnippetData): Promise<Snippet>
